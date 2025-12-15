@@ -1,15 +1,40 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.akovriginsdg.cpplugin</id>
-    <name>CP-plugin</name>
+    <name>CP-HELPER</name>
     <vendor>a-kovrigin-sdg</vendor>
+    <description><![CDATA[
+    Internal helper plugin for dating-express project.<br>
+    Features:
+    <ul>
+        <li>Navigation for HBS widget/service links</li>
+        <li>Navigation for Flux component events</li>
+        <li>Localization (L10n) reference support</li>
+        <li>RequireJS module navigation</li>
+    </ul>
+    ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>JavaScript</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.akovriginsdg.cpplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.akovriginsdg.cpplugin.startup.MyProjectActivity" />
+        <psi.referenceContributor language="JavaScript"
+                                  implementation="com.github.akovriginsdg.cpplugin.fluxReferenceResolver.FluxComponentReferenceContributor"/>
+
+        <psi.referenceContributor language="JavaScript"
+                                  implementation="com.github.akovriginsdg.cpplugin.requireReferenceResolver.RequireModuleReferenceContributor"/>
+
+        <psi.referenceContributor language="XML"
+                                  implementation="com.github.akovriginsdg.cpplugin.hbsReferenceResolver.HbsReferenceContributor"/>
+
+        <psi.referenceContributor language="XML"
+                                  implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
+        <psi.referenceContributor language="JavaScript"
+                                  implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
+        <psi.referenceContributor language="TypeScript"
+                                  implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
     </extensions>
 </idea-plugin>
