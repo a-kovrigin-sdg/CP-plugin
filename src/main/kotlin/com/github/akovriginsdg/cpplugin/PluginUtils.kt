@@ -3,6 +3,8 @@ package com.github.akovriginsdg.cpplugin
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
+ import com.intellij.openapi.project.guessProjectDir
+ import com.intellij.openapi.vfs.VfsUtil
 
 object PluginUtils {
     /**
@@ -30,34 +32,37 @@ object PluginUtils {
      * Пример: .../public/app/widgets/foo/main.js -> widgets/foo
      */
     fun getModulePath(file: PsiFile): String? {
+        val project = file.project
         val vFile = file.virtualFile ?: return null
-        val path = vFile.path
+        val baseDir = project.guessProjectDir() ?: return null
 
-        // Проверяем, что файл внутри dating-web/public/app
-        // Используем константу APP_ROOT, но нам нужен полный путь для проверки или относительный
-        // Проще проверить вхождение строки "/public/app/"
-        val marker = "/public/app/"
-        val index = path.indexOf(marker)
-        if (index == -1) return null
+        // 1. Получаем путь относительно корня проекта (надежно работает и в тестах)
+        // Пример: "dating-web/public/app/modules/dialogs/chat.js"
+        val pathFromRoot = VfsUtil.getRelativePath(vFile, baseDir) ?: return null
 
-        // Отрезаем всё до /public/app/ включительно
-        var relativePath = path.substring(index + marker.length)
+        val appRoot = PluginConst.APP_ROOT // "dating-web/public/app"
 
-        // Убираем расширение (.js, .ts, .tsx)
-        if (relativePath.contains(".")) {
-            relativePath = relativePath.substringBeforeLast(".")
+        // 2. Проверяем, что файл внутри нашего app
+        if (!pathFromRoot.startsWith(appRoot)) return null
+
+        // 3. Формируем путь модуля
+        // "modules/dialogs/chat.js"
+        var modulePath = pathFromRoot.removePrefix(appRoot).removePrefix("/")
+
+        // Убираем расширение
+        if (modulePath.contains(".")) {
+            modulePath = modulePath.substringBeforeLast(".")
         }
 
-        // Убираем /index или /main или /view с конца, так как к ним обращаются по имени папки
-        if (relativePath.endsWith("/index")) {
-            relativePath = relativePath.removeSuffix("/index")
-        } else if (relativePath.endsWith("/main")) {
-            relativePath = relativePath.removeSuffix("/main")
-        } else if (relativePath.endsWith("/view")) {
-            // view часто импортируют как './view', но если это модуль, может быть и так
-            relativePath = relativePath.removeSuffix("/view")
+        // Убираем стандартные имена файлов (как в requirejs логике)
+        if (modulePath.endsWith("/index")) {
+            modulePath = modulePath.removeSuffix("/index")
+        } else if (modulePath.endsWith("/main")) {
+            modulePath = modulePath.removeSuffix("/main")
+        } else if (modulePath.endsWith("/view")) {
+            modulePath = modulePath.removeSuffix("/view")
         }
 
-        return relativePath
+        return modulePath
     }
 }

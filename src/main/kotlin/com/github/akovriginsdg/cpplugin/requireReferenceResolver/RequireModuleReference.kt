@@ -1,7 +1,8 @@
 package com.github.akovriginsdg.cpplugin.requireReferenceResolver
 
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.project.guessProjectDir
+import com.github.akovriginsdg.cpplugin.PluginConst
 import com.intellij.psi.*
 
 class RequireModuleReference(
@@ -10,33 +11,30 @@ class RequireModuleReference(
     private val path: String
 ) : PsiReferenceBase<PsiElement>(element, textRange) {
 
-    private val appBaseRelPath = "dating-web/public/app"
+    private val appBaseRelPath = PluginConst.APP_ROOT
 
     override fun resolve(): PsiElement? {
         val project = element.project
-        val basePath = project.basePath ?: return null
+        val baseDir = project.guessProjectDir() ?: return null
+        val psiManager = PsiManager.getInstance(project)
 
         val cleanPath = path.removePrefix("/")
 
-        val targetBasePath = "$basePath/$appBaseRelPath/$cleanPath"
-
-        val fs = LocalFileSystem.getInstance()
-        val psiManager = PsiManager.getInstance(project)
+        val targetBasePath = "$appBaseRelPath/$cleanPath"
 
         val candidates = listOf(
-            "$targetBasePath.js",       // appearance.js
-            "$targetBasePath/index.js"  // appearance/index.js
+            "$targetBasePath.js",
+            "$targetBasePath/index.js"
         )
 
         for (candidate in candidates) {
-            val vFile = fs.findFileByPath(candidate)
+            val vFile = baseDir.findFileByRelativePath(candidate)
             if (vFile != null && !vFile.isDirectory) {
                 return psiManager.findFile(vFile)
             }
         }
 
-        // Фоллбэк: если js файлы не найдены, попробуем открыть просто папку
-        val vDir = fs.findFileByPath(targetBasePath)
+        val vDir = baseDir.findFileByRelativePath(targetBasePath)
         if (vDir != null && vDir.isDirectory) {
             return psiManager.findDirectory(vDir)
         }

@@ -1,8 +1,9 @@
 package com.github.akovriginsdg.cpplugin.fluxReferenceResolver
 
+import com.github.akovriginsdg.cpplugin.PluginConst
 import com.intellij.lang.javascript.psi.*
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -11,30 +12,25 @@ class FluxComponentReference(
     textRange: TextRange
 ) : PsiReferenceBase<PsiElement>(element, textRange) {
 
-    private val configRelPath = "dating-web/orbit/source/modules/integrator/components/config.js"
-    private val importBaseRelPath = "dating-web/orbit/source"
-
-    private val supportedExtensions = listOf(
-        "", ".tsx", ".ts", ".jsx", ".js",
-        "/index.tsx", "/index.ts", "/index.jsx", "/index.js"
-    )
+    private val supportedExtensions = PluginConst.JS_TS_EXTENSIONS
 
     override fun resolve(): PsiElement? {
         val project = element.project
-        val basePath = project.basePath ?: return null
+        val baseDir = project.guessProjectDir() ?: return null
+        val psiManager = PsiManager.getInstance(project)
 
-        val configPath = "$basePath/$configRelPath"
-        val configFileVirtual = LocalFileSystem.getInstance().findFileByPath(configPath) ?: return null
-        val configFile = PsiManager.getInstance(project).findFile(configFileVirtual) as? JSFile ?: return null
+        // Ищем конфиг относительно корня
+        val configFileVirtual = baseDir.findFileByRelativePath(PluginConst.CONFIG_PATH) ?: return null
+        val configFile = psiManager.findFile(configFileVirtual) as? JSFile ?: return null
+
         val configObject = findComponentsConfigObject(configFile) ?: return null
-
         val keyName = element.text.trim('"', '\'')
         val property = configObject.findProperty(keyName) ?: return null
 
         val value = property.value as? JSFunction ?: return null
         val returnExpression = getReturnExpression(value) ?: return null
 
-        return resolveTargetFile(returnExpression, basePath)
+        return resolveTargetFile(returnExpression)
     }
 
     private fun findComponentsConfigObject(file: JSFile): JSObjectLiteralExpression? {
@@ -57,11 +53,11 @@ class FluxComponentReference(
         return PsiTreeUtil.findChildOfType(function, JSExpression::class.java)
     }
 
-    private fun resolveTargetFile(expression: JSExpression, projectBasePath: String): PsiElement? {
+    private fun resolveTargetFile(expression: JSExpression): PsiElement? {
         // --- SCENARIO 1: Lazy Import ---
         val lazyImportPath = findPathInImportCallRecursive(expression)
         if (lazyImportPath != null) {
-            return findFileByCustomPath(lazyImportPath, projectBasePath)
+            return findFileByCustomPath(lazyImportPath)
         }
 
         // --- SCENARIO 2: Direct Reference ---
@@ -70,7 +66,7 @@ class FluxComponentReference(
 
             val importPath = findPathFromParentImport(resolvedElement)
             if (importPath != null) {
-                val result = findFileByCustomPath(importPath, projectBasePath)
+                val result = findFileByCustomPath(importPath)
                 if (result != null) return result
             }
             return resolvedElement
@@ -147,23 +143,26 @@ class FluxComponentReference(
         return null
     }
 
-    private fun findFileByCustomPath(path: String, projectBasePath: String): PsiElement? {
-        val fs = LocalFileSystem.getInstance()
+    private fun findFileByCustomPath(path: String): PsiElement? {
+        val baseDir = element.project.guessProjectDir() ?: return null
         val psiManager = PsiManager.getInstance(element.project)
 
         val cleanPath = path.removePrefix("/")
         val pathCandidates = mutableListOf<String>()
 
-        pathCandidates.add("$projectBasePath/$cleanPath")
-        if (!cleanPath.startsWith(importBaseRelPath)) {
-            pathCandidates.add("$projectBasePath/$importBaseRelPath/$cleanPath")
+        // 1. Прямой путь от корня
+        pathCandidates.add(cleanPath)
+
+        // 2. Путь через dating-web/orbit/source
+        if (!cleanPath.startsWith(PluginConst.IMPORT_BASE_PATH)) {
+            pathCandidates.add("${PluginConst.IMPORT_BASE_PATH}/$cleanPath")
         }
 
         // 1. Ищем файл
-        for (basePathCandidate in pathCandidates) {
+        for (relativePathCandidate in pathCandidates) {
             for (ext in supportedExtensions) {
-                val fullPath = basePathCandidate + ext
-                val vFile = fs.findFileByPath(fullPath)
+                val fullRelPath = relativePathCandidate + ext
+                val vFile = baseDir.findFileByRelativePath(fullRelPath)
                 if (vFile != null && !vFile.isDirectory) {
                     return psiManager.findFile(vFile)
                 }
@@ -171,8 +170,8 @@ class FluxComponentReference(
         }
 
         // 2. Ищем папку (Fallback)
-        for (basePathCandidate in pathCandidates) {
-            val vFile = fs.findFileByPath(basePathCandidate)
+        for (relativePathCandidate in pathCandidates) {
+            val vFile = baseDir.findFileByRelativePath(relativePathCandidate)
             if (vFile != null && vFile.isDirectory) {
                 return psiManager.findDirectory(vFile)
             }

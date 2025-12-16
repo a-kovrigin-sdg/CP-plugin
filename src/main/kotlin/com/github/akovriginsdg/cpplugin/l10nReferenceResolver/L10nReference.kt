@@ -1,7 +1,7 @@
 package com.github.akovriginsdg.cpplugin.l10nReferenceResolver
 
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.*
 
 class L10nReference(
@@ -12,13 +12,14 @@ class L10nReference(
 
     override fun resolve(): PsiElement? {
         val project = element.project
-        val basePath = project.basePath ?: return null
+
+        val baseDir = project.guessProjectDir() ?: return null
 
         val pathPart = fullPath.substringBefore('#')
         val cleanPath = pathPart.removePrefix("/")
 
-        val jsonFilePath = "$basePath/l10n/$cleanPath/en-US.json"
-        val virtualFile = LocalFileSystem.getInstance().findFileByPath(jsonFilePath) ?: return null
+        val relativePath = "l10n/$cleanPath/en-US.json"
+        val virtualFile = baseDir.findFileByRelativePath(relativePath) ?: return null
 
         return PsiManager.getInstance(project).findFile(virtualFile)
     }

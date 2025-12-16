@@ -1,7 +1,7 @@
 package com.github.akovriginsdg.cpplugin.hbsReferenceResolver
 
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 
 class HbsReference(
@@ -12,22 +12,40 @@ class HbsReference(
 ) : PsiReferenceBase<PsiElement>(element, textRange) {
 
     override fun resolve(): PsiElement? {
-        val fs = LocalFileSystem.getInstance()
         val project = element.project
+        // 1. Получаем виртуальный корень проекта
+        val baseDir = project.guessProjectDir() ?: return null
+        val basePath = project.basePath ?: return null
         val psiManager = PsiManager.getInstance(project)
 
-        for (path in fileCandidates) {
-            val file = fs.findFileByPath(path)
-            // Если файл найден и это НЕ директория — возвращаем его
-            if (file != null && !file.isDirectory) {
-                return psiManager.findFile(file)
+        // Вспомогательная функция: превращает абсолютный путь в относительный
+        fun getRelativePath(path: String): String {
+            // Если путь начинается с корня проекта (например /mock/path/dating-web/...), отрезаем корень
+            return if (path.startsWith(basePath)) {
+                path.substring(basePath.length).removePrefix("/")
+            } else {
+                // Если путь уже был относительным или "кривым", просто убираем начальный слеш
+                path.removePrefix("/")
             }
         }
 
+        // 2. Проходим по кандидатам
+        for (path in fileCandidates) {
+            val relativePath = getRelativePath(path)
+            val vFile = baseDir.findFileByRelativePath(relativePath)
+
+            if (vFile != null && !vFile.isDirectory) {
+                return psiManager.findFile(vFile)
+            }
+        }
+
+        // 3. Проверяем Fallback (папку)
         if (fallbackPath != null) {
-            val dir = fs.findFileByPath(fallbackPath)
-            if (dir != null && dir.isDirectory) {
-                return psiManager.findDirectory(dir)
+            val relativeFallback = getRelativePath(fallbackPath)
+            val vDir = baseDir.findFileByRelativePath(relativeFallback)
+
+            if (vDir != null && vDir.isDirectory) {
+                return psiManager.findDirectory(vDir)
             }
         }
 
