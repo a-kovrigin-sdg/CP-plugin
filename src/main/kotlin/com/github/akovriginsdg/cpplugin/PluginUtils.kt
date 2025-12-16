@@ -15,4 +15,12 @@ object PluginUtils {
 
         return markerFile != null && markerFile.isDirectory
     }
+
+    /**
+     * Конвертирует PascalCase или camelCase в kebab-case.
+     * Пример: UserProfile -> user-profile
+     */
+    fun toKebabCase(str: String): String {
+        return str.replace(Regex("([a-z])([A-Z]+)"), "$1-$2").lowercase()
+    }
 }

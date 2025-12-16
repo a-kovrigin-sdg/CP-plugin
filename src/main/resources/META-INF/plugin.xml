@@ -37,4 +37,37 @@
         <psi.referenceContributor language="TypeScript"
                                   implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
     </extensions>
+    <actions>
+        <action id="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
+                class="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
+                text="React Component Structure"
+                description="Creates index.tsx, view.tsx and styles.module.less"
+                icon="AllIcons.Nodes.Module"
+        >
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
+        <action id="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"
+                class="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"
+                text="Add Tracking HOC"
+                description="Creates tracking.tsx and wraps View in index.tsx"
+                icon="AllIcons.General.Add">
+
+            <add-to-group group-id="NewGroup"
+                          anchor="after"
+                          relative-to-action="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"/>
+
+            <add-to-group group-id="GenerateGroup" anchor="first"/>
+        </action>
+<!--        <action id="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"-->
+<!--                class="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"-->
+<!--                text="Add Tracking HOC"-->
+<!--                description="Creates tracking.tsx and wraps View in index.tsx">-->
+
+<!--            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
+
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+
+<!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
+<!--        </action>-->
+    </actions>
 </idea-plugin>
