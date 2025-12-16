@@ -36,6 +36,7 @@
                                   implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
         <psi.referenceContributor language="TypeScript"
                                   implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
+        <referencesSearch implementation="com.github.akovriginsdg.cpplugin.usageSearcher.ProjectFileUsageSearcher"/>
     </extensions>
     <actions>
         <action id="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
