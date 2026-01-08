@@ -59,16 +59,5 @@
 
             <add-to-group group-id="GenerateGroup" anchor="first"/>
         </action>
-<!--        <action id="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"-->
-<!--                class="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"-->
-<!--                text="Add Tracking HOC"-->
-<!--                description="Creates tracking.tsx and wraps View in index.tsx">-->
-
-<!--            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
-
-<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
-
-<!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
-<!--        </action>-->
     </actions>
 </idea-plugin>
