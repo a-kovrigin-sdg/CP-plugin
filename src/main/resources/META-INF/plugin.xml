@@ -59,5 +59,12 @@
 
             <add-to-group group-id="GenerateGroup" anchor="first"/>
         </action>
+        <action id="com.github.akovriginsdg.cpplugin.actions.CreateDomainInjectionAction"
+                class="com.github.akovriginsdg.cpplugin.actions.CreateDomainInjectionAction"
+                text="Create Domain Injection"
+                description="Creates domain bridge files for web and mobile"
+                icon="AllIcons.Nodes.Interface">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
     </actions>
 </idea-plugin>

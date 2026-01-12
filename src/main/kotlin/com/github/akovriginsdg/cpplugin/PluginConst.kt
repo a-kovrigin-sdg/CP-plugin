@@ -3,6 +3,8 @@ package com.github.akovriginsdg.cpplugin
 object PluginConst {
     // Базовые пути относительно корня проекта
     const val DATING_WEB_ROOT = "dating-web"
+    const val DATING_MOBILE_ROOT = "dating-mobile"
+
     const val APP_ROOT = "$DATING_WEB_ROOT/public/app"
     const val WIDGETS_ROOT = "$APP_ROOT/widgets"
     const val SERVICES_ROOT = "$APP_ROOT/services"
@@ -10,11 +12,15 @@ object PluginConst {
     const val CONFIG_PATH = "dating-web/orbit/source/modules/integrator/components/config.js"
     const val IMPORT_BASE_PATH = "dating-web/orbit/source"
 
+    // Domain Injection
+    const val DOMAIN_ROOT_DIR = "domain"
+    const val WEB_DOMAIN_PATH = "$IMPORT_BASE_PATH/$DOMAIN_ROOT_DIR"
+    const val MOBILE_DOMAIN_PATH = "$DATING_MOBILE_ROOT/src/$DOMAIN_ROOT_DIR"
+    const val DOMAIN_IMPORT_PREFIX = "@sdv/domain"
+
     val JS_TS_EXTENSIONS = listOf("", ".tsx", ".ts", ".jsx", ".js", "/index.tsx", "/index.ts", "/index.jsx", "/index.js")
 
-    // Шаблоны для генерации компонента
-    // %s будет заменено на имя компонента (например, MyComponent)
-
+    // --- ШАБЛОНЫ REACT  ---
     val TPL_INDEX = """
         import { memo } from 'react'
         import View from './view'
@@ -75,5 +81,61 @@ object PluginConst {
 
             return <Component {...otherProps} />
         })
+    """.trimIndent()
+
+    // --- ШАБЛОНЫ DOMAIN INJECTION ---
+
+    val TPL_DOMAIN_AGGREGATOR = """
+        export * from '%s/%s/.injected'
+        
+        export * from './%s.contracts'
+        
+    """.trimIndent()
+
+    val TPL_DOMAIN_CONTRACTS_CLASS = """
+        export type %s = {
+            // TODO: Define interface
+        }
+        
+    """.trimIndent()
+
+    val TPL_DOMAIN_INJECTION_TARGET_CLASS = """
+        import type { %s } from '%s/%s'
+        import { singleton } from '@sdv/commons/utils/singleton'
+
+        class %sImplementation implements %s {
+            static readonly shared = singleton((userId: string) => new %sImplementation(userId))
+        
+            private readonly userId: string
+        
+            private constructor(userId: string) {
+                this.userId = userId
+                throw new Error('Not implemented')
+            }
+        }
+        
+        export { %sImplementation as %s }
+        
+    """.trimIndent()
+
+    // 4. FUNCTION: Контракт
+    val TPL_DOMAIN_CONTRACTS_FUNCTION = """
+        import { Single } from '@sdv/commons/rx/single'
+
+        export type %s = () => Single<void>
+        
+    """.trimIndent()
+
+    // 5. FUNCTION: Реализация
+    val TPL_DOMAIN_INJECTION_TARGET_FUNCTION = """
+        import { Single } from '@sdv/commons/rx/single'
+        import type { %s } from '%s/%s'
+
+        const %sImplementation: %s = () => {
+            return new Single.error('Not implemented')
+        }
+
+        export { %sImplementation as %s }
+        
     """.trimIndent()
 }
