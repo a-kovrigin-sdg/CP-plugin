@@ -11,6 +11,7 @@ object PluginConst {
     const val L10N_ROOT = "l10n"
     const val CONFIG_PATH = "dating-web/orbit/source/modules/integrator/components/config.js"
     const val IMPORT_BASE_PATH = "dating-web/orbit/source"
+    const val WEB_COMPONENTS_FOLDER = "$DATING_WEB_ROOT/orbit/source/components"
 
     // Domain Injection
     const val DOMAIN_ROOT_DIR = "domain"

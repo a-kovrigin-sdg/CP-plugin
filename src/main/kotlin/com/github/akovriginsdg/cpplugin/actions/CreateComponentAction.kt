@@ -2,17 +2,20 @@ package com.github.akovriginsdg.cpplugin.actions
 
 import com.github.akovriginsdg.cpplugin.PluginConst
 import com.github.akovriginsdg.cpplugin.PluginUtils
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.executeCommand
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 
@@ -26,12 +29,22 @@ class CreateComponentAction : AnAction() {
         val project = e.project
         val selectedFile = e.getData(CommonDataKeys.VIRTUAL_FILE)
 
-        val isVisible = project != null &&
-                PluginUtils.isTargetProject(project) &&
+        val isProjectValid = project != null && (
+                ApplicationManager.getApplication().isUnitTestMode ||
+                        PluginUtils.isTargetProject(project)
+                )
+
+        val isVisible = isProjectValid &&
                 selectedFile != null &&
-                selectedFile.isDirectory
+                selectedFile.isDirectory &&
+                isTargetDirectory(selectedFile)
 
         e.presentation.isEnabledAndVisible = isVisible
+    }
+
+    private fun isTargetDirectory(file: VirtualFile): Boolean {
+        val path = file.path.replace("\\", "/")
+        return path.contains(PluginConst.WEB_COMPONENTS_FOLDER)
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -62,22 +75,18 @@ class CreateComponentAction : AnAction() {
         val psiManager = PsiManager.getInstance(project)
         val parentPsiDir = psiManager.findDirectory(parentDir) ?: return
 
-        val folderName = PluginUtils.toKebabCase(name) // UserProfile -> user-profile
+        val folderName = PluginUtils.toKebabCase(name)
 
-        val existingDir = parentPsiDir.findSubdirectory(folderName)
-        if (existingDir != null) {
+        if (parentPsiDir.findSubdirectory(folderName) != null) {
             throw Exception("Directory $folderName already exists")
         }
 
         val componentDir = parentPsiDir.createSubdirectory(folderName)
 
         createFile(componentDir, "index.tsx", PluginConst.TPL_INDEX.format(name, name))
-
         createFile(componentDir, "view.tsx", PluginConst.TPL_VIEW)
-
         createFile(componentDir, "styles.module.less", PluginConst.TPL_STYLE)
 
-        // Открываем index.tsx (или view.tsx, как удобнее)
         val fileToOpen = componentDir.findFile("index.tsx")?.virtualFile
         if (fileToOpen != null) {
             FileEditorManager.getInstance(project).openFile(fileToOpen, true)
@@ -86,9 +95,9 @@ class CreateComponentAction : AnAction() {
 
     private fun createFile(dir: PsiDirectory, fileName: String, content: String): VirtualFile? {
         val fileFactory = PsiFileFactory.getInstance(dir.project)
-        val file = fileFactory.createFileFromText(fileName, content)
+        val fileType = FileTypeManager.getInstance().getFileTypeByFileName(fileName)
+        val file = fileFactory.createFileFromText(fileName, fileType, content)
         val addedElement = dir.add(file)
-
-        return (addedElement as? com.intellij.psi.PsiFile)?.virtualFile
+        return (addedElement as? PsiFile)?.virtualFile
     }
 }
