@@ -28,6 +28,7 @@ Features:
 * React component structure generator
 * Tracking HOC adder
 * Platform templates implementation for monorepo
+* Jump on 5 lines above/below (fn + option + UP/DOWN) with possible text selection by adding Shift
 <!-- Plugin description end -->
 
 ## Installation

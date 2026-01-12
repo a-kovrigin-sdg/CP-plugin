@@ -39,6 +39,42 @@
         <referencesSearch implementation="com.github.akovriginsdg.cpplugin.usageSearcher.ProjectFileUsageSearcher"/>
     </extensions>
     <actions>
+        <group id="CPPlugin.Navigation" text="Fast Navigation" popup="true">
+            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpUpAction"
+                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
+                    text="Jump Up" description="Jumps up with custom logic">
+
+                <keyboard-shortcut first-keystroke="alt PAGE_UP" keymap="$default"/>
+
+                <keyboard-shortcut first-keystroke="shift alt PAGE_UP" keymap="$default"/>
+            </action>
+
+            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpDownAction"
+                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpDownAction"
+                    text="Jump Down" description="Jumps down with custom logic">
+
+                <keyboard-shortcut first-keystroke="alt PAGE_DOWN" keymap="$default"/>
+
+                <keyboard-shortcut first-keystroke="shift alt PAGE_DOWN" keymap="$default"/>
+            </action>
+<!--            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretUpAction"-->
+<!--                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretUpAction"-->
+<!--                    text="Jump Caret Up"-->
+<!--                    description="Moves caret up by configured number of lines">-->
+<!--                <keyboard-shortcut-->
+<!--                        first-keystroke="shift alt meta UP"-->
+<!--                        keymap="$default"/>-->
+<!--            </action>-->
+
+<!--            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretDownAction"-->
+<!--                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretDownAction"-->
+<!--                    text="Jump Caret Down"-->
+<!--                    description="Moves caret down by configured number of lines">-->
+<!--                <keyboard-shortcut-->
+<!--                        first-keystroke="shift alt meta DOWN"-->
+<!--                        keymap="$default"/>-->
+<!--            </action>-->
+        </group>
         <action id="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
                 class="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
                 text="React Component Structure"
