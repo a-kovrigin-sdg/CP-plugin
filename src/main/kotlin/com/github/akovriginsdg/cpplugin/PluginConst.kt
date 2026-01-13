@@ -21,6 +21,8 @@ object PluginConst {
 
     val JS_TS_EXTENSIONS = listOf("", ".tsx", ".ts", ".jsx", ".js", "/index.tsx", "/index.ts", "/index.jsx", "/index.js")
 
+    const val TEMPLATE_OFFERING = "Offering"
+
     // --- ШАБЛОНЫ REACT  ---
     val TPL_INDEX = """
         import { memo } from 'react'

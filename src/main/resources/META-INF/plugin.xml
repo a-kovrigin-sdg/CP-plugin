@@ -21,6 +21,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileTemplateGroup implementation="com.github.akovriginsdg.cpplugin.OfferingTemplateFactory"/>
         <psi.referenceContributor language="JavaScript"
                                   implementation="com.github.akovriginsdg.cpplugin.fluxReferenceResolver.FluxComponentReferenceContributor"/>
 
@@ -40,6 +41,14 @@
     </extensions>
     <actions>
         <group id="CPPlugin.Navigation" text="Fast Navigation" popup="true">
+            <action id="com.github.akovriginsdg.cpplugin.actions.offeringTemplateGenerator.CreateOfferingAction"
+                    class="com.github.akovriginsdg.cpplugin.actions.offeringTemplateGenerator.CreateOfferingAction"
+                    text="Offering"
+                    icon="AllIcons.Actions.AddFile"
+                    description="Creates a new Offering class inside domain">
+                <add-to-group group-id="NewGroup" anchor="first"/>
+            </action>
+
             <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpUpAction"
                     class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
                     text="Jump Up" description="Jumps up with custom logic">
@@ -57,23 +66,6 @@
 
                 <keyboard-shortcut first-keystroke="shift alt PAGE_DOWN" keymap="$default"/>
             </action>
-<!--            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretUpAction"-->
-<!--                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretUpAction"-->
-<!--                    text="Jump Caret Up"-->
-<!--                    description="Moves caret up by configured number of lines">-->
-<!--                <keyboard-shortcut-->
-<!--                        first-keystroke="shift alt meta UP"-->
-<!--                        keymap="$default"/>-->
-<!--            </action>-->
-
-<!--            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretDownAction"-->
-<!--                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpCaretDownAction"-->
-<!--                    text="Jump Caret Down"-->
-<!--                    description="Moves caret down by configured number of lines">-->
-<!--                <keyboard-shortcut-->
-<!--                        first-keystroke="shift alt meta DOWN"-->
-<!--                        keymap="$default"/>-->
-<!--            </action>-->
         </group>
         <action id="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
                 class="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"

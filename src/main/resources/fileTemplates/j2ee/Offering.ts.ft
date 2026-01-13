@@ -1,0 +1,26 @@
+import { Offering } from '@sdv/commons/offering'
+import { singleton } from '@sdv/commons/utils/singleton'
+import type { Observable } from 'rxjs'
+import { of } from 'rxjs'
+
+export type ${OFFER_NAME} = {
+
+}
+
+export class ${CLASS_NAME} extends Offering<
+    ${OFFER_NAME},
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    ${OFFER_NAME}
+> {
+    static readonly shared = singleton(userId => new ${CLASS_NAME}(userId))
+
+    readonly canOffer: Observable<${OFFER_NAME} | false>
+
+    private constructor(userId: string) {
+        super()
+        this.canOffer = of(false)
+    }
+}
