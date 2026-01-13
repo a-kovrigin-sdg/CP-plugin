@@ -58,10 +58,19 @@ class FluxComponentReferenceContributor : PsiReferenceContributor() {
                     return PsiReference.EMPTY_ARRAY
                 }
 
+                val startOffset = 1
+                val endOffset = element.textLength - 1
+
+                if (startOffset > endOffset) {
+                    return PsiReference.EMPTY_ARRAY
+                }
+
+                val range = TextRange(startOffset, endOffset)
+
                 return arrayOf(
                     FluxComponentReference(
                         element,
-                        TextRange(1, element.textLength - 1)
+                        range
                     )
                 )
             }

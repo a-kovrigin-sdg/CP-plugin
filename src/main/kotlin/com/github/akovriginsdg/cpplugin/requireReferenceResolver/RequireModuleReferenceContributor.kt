@@ -49,7 +49,15 @@ class RequireModuleReferenceContributor : PsiReferenceContributor() {
 
                 // 4. Создаем ссылку
                 val value = element.stringValue ?: return PsiReference.EMPTY_ARRAY
-                val range = TextRange(1, element.textLength - 1)
+
+                val startOffset = 1
+                val endOffset = element.textLength - 1
+
+                if (startOffset > endOffset) {
+                    return PsiReference.EMPTY_ARRAY
+                }
+
+                val range = TextRange(startOffset, endOffset)
 
                 return arrayOf(RequireModuleReference(element, range, value))
             }
