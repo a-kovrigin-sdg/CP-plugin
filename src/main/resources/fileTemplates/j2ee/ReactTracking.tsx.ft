@@ -1,0 +1,15 @@
+import type { ComponentPropsType, ComponentType } from 'react'
+import { memo } from 'react'
+import type View from './view'
+
+type ViewProps = ComponentPropsType<typeof View>
+
+type Props = ViewProps & {
+    // Add tracking props here
+}
+
+export default (Component: ComponentType<ViewProps>) => memo((props: Props) => {
+    const { ...otherProps } = props
+
+    return <Component {...otherProps} />
+})

@@ -2,25 +2,24 @@ package com.github.akovriginsdg.cpplugin.actions
 
 import com.github.akovriginsdg.cpplugin.PluginConst
 import com.github.akovriginsdg.cpplugin.PluginUtils
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.command.executeCommand
+import com.intellij.ide.fileTemplates.FileTemplate
+import com.intellij.ide.fileTemplates.FileTemplateManager
+import com.intellij.ide.fileTemplates.FileTemplateUtil
+import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
-import com.intellij.openapi.application.runWriteAction
+import java.util.*
 
-class AddTrackingAction : AnAction() {
+open class AddTrackingAction : AnAction() {
 
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.BGT
-    }
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
         val project = e.project
@@ -46,7 +45,6 @@ class AddTrackingAction : AnAction() {
         val trackingFile = dir.findChild("tracking.tsx")
 
         val hasIndex = indexFile != null && indexFile.isValid
-        // Кнопка активна, только если tracking.tsx еще нет (или он невалиден/удален)
         val noTracking = trackingFile == null || !trackingFile.isValid
 
         e.presentation.isEnabledAndVisible = hasIndex && noTracking
@@ -55,82 +53,104 @@ class AddTrackingAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val selectedFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val dir = if (selectedFile.isDirectory) selectedFile else selectedFile.parent ?: return
+        val indexFile = dir.findChild("index.tsx") ?: return
 
-        if (!selectedFile.isValid) return
+        val psiManager = PsiManager.getInstance(project)
+        val psiDir = psiManager.findDirectory(dir) ?: return
 
-        val dir = if (selectedFile.isDirectory) selectedFile else selectedFile.parent
-        if (dir == null || !dir.isValid) return
+        val trackingTemplate = getTemplate(project, PluginConst.TPL_TRACKING)
+        if (trackingTemplate == null) {
+            Messages.showErrorDialog(project, "Template not found", "Error")
+            return
+        }
 
-        val indexFile = dir.findChild("index.tsx")
-        if (indexFile == null || !indexFile.isValid) return
+        runWriteModification(project, psiDir, indexFile, trackingTemplate)
+    }
 
-        executeCommand(project, "Add Tracking HOC") {
-            runWriteAction {
-                try {
-                    // 1. Создаем файл tracking.tsx
-                    createTrackingFile(dir)
+    /**
+     * Основной метод изменения (открыт для тестов)
+     */
+    protected open fun runWriteModification(
+        project: Project,
+        dir: PsiDirectory,
+        indexFile: VirtualFile,
+        template: FileTemplate
+    ) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            try {
+                createTrackingFile(project, dir, template)
 
-                    // 2. Модифицируем index.tsx
-                    modifyIndexFile(project, indexFile)
-                } catch (ex: Exception) {
-                    Messages.showErrorDialog(project, "Error adding tracking: ${ex.message}", "Error")
+                val document = FileDocumentManager.getInstance().getDocument(indexFile)
+                if (document != null) {
+                    val originalText = document.text
+                    val newText = modifyIndexContent(originalText)
+
+                    if (newText != originalText) {
+                        document.setText(newText)
+                        PsiDocumentManager.getInstance(project).commitDocument(document)
+                    }
+
+                    FileEditorManager.getInstance(project).openFile(indexFile, true)
                 }
+
+            } catch (ex: Exception) {
+                Messages.showErrorDialog(project, "Error adding tracking: ${ex.message}", "Error")
             }
         }
     }
 
-    private fun createTrackingFile(dir: VirtualFile) {
-        val fileName = "tracking.tsx"
-
-        val newFile = dir.createChildData(this, fileName)
-
-        newFile.setBinaryContent(PluginConst.TPL_TRACKING.toByteArray())
-
-        newFile.refresh(false, false)
+    protected open fun getTemplate(project: Project, name: String): FileTemplate? {
+        val manager = FileTemplateManager.getInstance(project)
+        return try {
+            manager.getJ2eeTemplate(name)
+        } catch (e: Exception) {
+            try { manager.getTemplate(name) } catch (ignored: Exception) { null }
+        }
     }
 
-    private fun modifyIndexFile(project: Project, indexFile: VirtualFile) {
-        if (!indexFile.isValid) return
+    private fun createTrackingFile(project: Project, dir: PsiDirectory, template: FileTemplate) {
+        val props = Properties(FileTemplateManager.getInstance(project).defaultProperties)
+        props.setProperty("COMPONENT_NAME", "TrackingWrapper")
 
-        val document = FileDocumentManager.getInstance().getDocument(indexFile) ?: return
-        val text = document.text
+        FileTemplateUtil.createFromTemplate(template, "tracking", props, dir)
+    }
 
-        if (text.contains("import withTracking")) return
+    fun modifyIndexContent(text: String): String {
+        if (text.contains("import withTracking")) return text
 
-        val newText = StringBuilder(text)
+        var currentText = text
 
-        // ШАГ A: Добавляем импорт
-        val lastImportIndex = text.lastIndexOf("import ")
-        if (lastImportIndex != -1) {
-            val endOfLine = text.indexOf("\n", lastImportIndex)
-            if (endOfLine != -1) {
-                newText.insert(endOfLine + 1, "import withTracking from './tracking'\n")
-            }
+        val importRegex = Regex("^import\\s+.*", RegexOption.MULTILINE)
+        val imports = importRegex.findAll(text).toList()
+
+        val importStatement = "import withTracking from './tracking'"
+
+        if (imports.isNotEmpty()) {
+            val lastImport = imports.last()
+            val insertIndex = lastImport.range.last + 1
+            currentText = currentText.substring(0, insertIndex) + "\n" + importStatement + currentText.substring(insertIndex)
         } else {
-            newText.insert(0, "import withTracking from './tracking'\n")
+            currentText = "$importStatement\n\n$currentText"
         }
 
-        var currentString = newText.toString()
+        val exportRegex = Regex("^(\\s*)export const\\s+(\\w+)\\s*=", RegexOption.MULTILINE)
+        val exportMatch = exportRegex.find(currentText)
 
-        // ШАГ B: Создаем обертку
-        val exportIndex = currentString.indexOf("export const")
-        if (exportIndex != -1) {
-            val insertPos = exportIndex
-            val wrapperCode = "const ViewWithTracking = withTracking(View)\n\n"
-            currentString = currentString.substring(0, insertPos) + wrapperCode + currentString.substring(insertPos)
+        if (exportMatch != null) {
+            val indentation = exportMatch.groupValues[1]
+            val componentName = exportMatch.groupValues[2]
+
+            val wrapperCode = "${indentation}const ViewWithTracking = withTracking(View)\n\n"
+
+            val insertIndex = exportMatch.range.first
+            currentText = currentText.substring(0, insertIndex) + wrapperCode + currentText.substring(insertIndex)
         }
 
-        // ШАГ C: Заменяем использование
-        currentString = currentString.replace(Regex("<View(\\s|>)"), "<ViewWithTracking$1")
-        currentString = currentString.replace("</View>", "</ViewWithTracking>")
+        currentText = currentText.replace(Regex("<View(\\s|/|>)"), "<ViewWithTracking$1")
 
-        // Применяем изменения
-        document.setText(currentString)
-        PsiDocumentManager.getInstance(project).commitDocument(document)
+        currentText = currentText.replace("</View>", "</ViewWithTracking>")
 
-        // Открываем файл
-        if (indexFile.isValid) {
-            FileEditorManager.getInstance(project).openFile(indexFile, true)
-        }
+        return currentText
     }
 }

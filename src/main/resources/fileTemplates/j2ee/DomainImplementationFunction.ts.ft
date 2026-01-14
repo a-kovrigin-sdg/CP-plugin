@@ -1,0 +1,8 @@
+import { Single } from '@sdv/commons/rx/single'
+import type { ${TYPE_NAME} } from '${DOMAIN_PREFIX}/${CONTRACT_IMPORT}'
+
+const ${FUNC_NAME}Implementation: ${TYPE_NAME} = () => {
+    return new Single.error('Not implemented')
+}
+
+export { ${FUNC_NAME}Implementation as ${FUNC_NAME} }

@@ -22,123 +22,14 @@ object PluginConst {
     val JS_TS_EXTENSIONS = listOf("", ".tsx", ".ts", ".jsx", ".js", "/index.tsx", "/index.ts", "/index.jsx", "/index.js")
 
     const val TEMPLATE_OFFERING = "Offering"
-
-    // --- ШАБЛОНЫ REACT  ---
-    val TPL_INDEX = """
-        import { memo } from 'react'
-        import View from './view'
-
-        type Props = {
-            // Define your props here
-        }
-
-        export const %s = memo((props: Props) => {
-            // const {} = props
-  
-            return (
-                <View 
-                    {...props} 
-                />
-            )
-        })
-    """.trimIndent()
-
-    val TPL_VIEW = """
-        import { memo } from 'react'
-        import styles from './styles.module.less'
-
-        type Props = {
-            // Define your props here
-        }
-
-        export default memo((props: Props) => {
-            // const {} = props
-            
-            return (
-                <div className={styles.container}>
-                    // 
-                </div>
-            )
-        })
-    """.trimIndent()
-
-    val TPL_STYLE = """
-        .container {
-            display: block;
-        }
-    """.trimIndent()
-
-    val TPL_TRACKING = """
-        import type { ComponentPropsType, ComponentType } from 'react'
-        import { memo } from 'react'
-        import type View from './view'
-
-        type ViewProps = ComponentPropsType<typeof View>
-
-        type Props = ViewProps & {
-            // Add tracking props here
-        }
-
-        export default (Component: ComponentType<ViewProps>) => memo((props: Props) => {
-            const { ...otherProps } = props
-
-            return <Component {...otherProps} />
-        })
-    """.trimIndent()
-
-    // --- ШАБЛОНЫ DOMAIN INJECTION ---
-
-    val TPL_DOMAIN_AGGREGATOR = """
-        export * from '%s/%s/.injected'
-        
-        export * from './%s.contracts'
-        
-    """.trimIndent()
-
-    val TPL_DOMAIN_CONTRACTS_CLASS = """
-        export type %s = {
-            // TODO: Define interface
-        }
-        
-    """.trimIndent()
-
-    val TPL_DOMAIN_INJECTION_TARGET_CLASS = """
-        import type { %s } from '%s/%s'
-        import { singleton } from '@sdv/commons/utils/singleton'
-
-        class %sImplementation implements %s {
-            static readonly shared = singleton((userId: string) => new %sImplementation(userId))
-        
-            private readonly userId: string
-        
-            private constructor(userId: string) {
-                this.userId = userId
-                throw new Error('Not implemented')
-            }
-        }
-        
-        export { %sImplementation as %s }
-        
-    """.trimIndent()
-
-    // 4. FUNCTION: Контракт
-    val TPL_DOMAIN_CONTRACTS_FUNCTION = """
-        import { Single } from '@sdv/commons/rx/single'
-
-        export type %s = () => Single<void>
-        
-    """.trimIndent()
-
-    // 5. FUNCTION: Реализация
-    val TPL_DOMAIN_INJECTION_TARGET_FUNCTION = """
-        import { Single } from '@sdv/commons/rx/single'
-        import type { %s } from '%s/%s'
-
-        const %sImplementation: %s = () => {
-            return new Single.error('Not implemented')
-        }
-
-        export { %sImplementation as %s }
-        
-    """.trimIndent()
+    const val TPL_DOMAIN_OFFERING = "Offering.ts"
+    const val TPL_DOMAIN_AGGREGATOR = "DomainAggregator.ts"
+    const val TPL_DOMAIN_CONTRACTS_CLASS = "DomainContractsClass.ts"
+    const val TPL_DOMAIN_CONTRACTS_FUNCTION = "DomainContractsFunction.ts"
+    const val TPL_DOMAIN_IMPL_CLASS = "DomainImplementationClass.ts"
+    const val TPL_DOMAIN_IMPL_FUNCTION = "DomainImplementationFunction.ts"
+    const val TPL_REACT_INDEX = "ReactComponentIndex.tsx"
+    const val TPL_REACT_VIEW = "ReactComponentView.tsx"
+    const val TPL_REACT_STYLE = "ReactComponentStyle.less"
+    const val TPL_TRACKING = "ReactTracking.tsx"
 }
