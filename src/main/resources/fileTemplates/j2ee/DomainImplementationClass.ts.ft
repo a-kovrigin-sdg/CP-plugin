@@ -1,0 +1,15 @@
+import type { ${TYPE_NAME} } from '${DOMAIN_PREFIX}/${CONTRACT_IMPORT}'
+import { singleton } from '@sdv/commons/utils/singleton'
+
+class ${TYPE_NAME}Implementation implements ${TYPE_NAME} {
+    static readonly shared = singleton((userId: string) => new ${TYPE_NAME}Implementation(userId))
+
+    private readonly userId: string
+
+    private constructor(userId: string) {
+        this.userId = userId
+        throw new Error('Not implemented')
+    }
+}
+
+export { ${TYPE_NAME}Implementation as ${TYPE_NAME} }

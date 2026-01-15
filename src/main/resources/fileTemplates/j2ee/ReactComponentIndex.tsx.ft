@@ -1,0 +1,16 @@
+import { memo } from 'react'
+import View from './view'
+
+type Props = {
+    // Define your props here
+}
+
+export const ${COMPONENT_NAME} = memo((props: Props) => {
+    // const {} = props
+
+    return (
+        <View
+            {...props}
+        />
+    )
+})

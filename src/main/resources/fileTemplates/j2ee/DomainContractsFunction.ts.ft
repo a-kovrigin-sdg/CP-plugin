@@ -1,0 +1,3 @@
+import { Single } from '@sdv/commons/rx/single'
+
+export type ${TYPE_NAME} = () => Single<void>

@@ -60,6 +60,11 @@ class HbsReferenceContributor : PsiReferenceContributor() {
 
                     val segmentStart = startOffsetInElement + initialOffset + currentIndex
                     val segmentEnd = segmentStart + cleanSegment.length
+
+                    if (segmentStart > segmentEnd) {
+                        return PsiReference.EMPTY_ARRAY
+                    }
+
                     val range = TextRange(segmentStart, segmentEnd)
 
                     val isLastSegment = (i == segments.size - 1)

@@ -51,13 +51,29 @@ class L10nReferenceContributor : PsiReferenceContributor() {
             return PsiReference.EMPTY_ARRAY
         }
 
-        val range = TextRange(1, element.textLength - 1)
+        val startOffset = 1
+        val endOffset = element.textLength - 1
+
+        if (startOffset > endOffset) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        val range = TextRange(startOffset, endOffset)
+
         return arrayOf(L10nReference(element, range, element.value))
     }
 
     private fun handleJsLiteral(element: JSLiteralExpression): Array<PsiReference> {
         val value = element.stringValue ?: return PsiReference.EMPTY_ARRAY
-        val range = TextRange(1, element.textLength - 1)
+
+        val startOffset = 1
+        val endOffset = element.textLength - 1
+
+        if (startOffset > endOffset) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        val range = TextRange(startOffset, endOffset)
 
         // --- ВАРИАНТ А: href={'path'} ---
         val xmlAttribute = PsiTreeUtil.getParentOfType(element, XmlAttribute::class.java)
