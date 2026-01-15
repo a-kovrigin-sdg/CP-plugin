@@ -38,6 +38,13 @@
         <psi.referenceContributor language="TypeScript"
                                   implementation="com.github.akovriginsdg.cpplugin.l10nReferenceResolver.L10nReferenceContributor"/>
         <referencesSearch implementation="com.github.akovriginsdg.cpplugin.usageSearcher.ProjectFileUsageSearcher"/>
+        <applicationService serviceImplementation="com.github.akovriginsdg.cpplugin.settings.NavigationSettings"/>
+
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.github.akovriginsdg.cpplugin.settings.NavigationConfigurable"
+                id="com.github.akovriginsdg.cpplugin.settings.NavigationConfigurable"
+                displayName="CP Helper"/>
     </extensions>
     <actions>
 

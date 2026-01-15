@@ -25,6 +25,13 @@ class NavigationSettings : PersistentStateComponent<NavigationSettings.State> {
         myState = state
     }
 
+    // Геттер/Сеттер для удобного доступа
+    var jumpLinesCount: Int
+        get() = myState.jumpLinesCount
+        set(value) {
+            myState.jumpLinesCount = value
+        }
+
     companion object {
         val instance: NavigationSettings
             get() = ApplicationManager.getApplication().getService(NavigationSettings::class.java)
