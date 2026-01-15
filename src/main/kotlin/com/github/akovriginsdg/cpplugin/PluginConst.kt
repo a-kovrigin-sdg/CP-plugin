@@ -32,4 +32,5 @@ object PluginConst {
     const val TPL_REACT_VIEW = "ReactComponentView.tsx"
     const val TPL_REACT_STYLE = "ReactComponentStyle.less"
     const val TPL_TRACKING = "ReactTracking.tsx"
+    const val TPL_MOCK_FILE = "MockFile.ts"
 }

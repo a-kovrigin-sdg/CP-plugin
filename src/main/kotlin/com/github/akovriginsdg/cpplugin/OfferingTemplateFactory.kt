@@ -20,6 +20,7 @@ class OfferingTemplateFactory : FileTemplateGroupDescriptorFactory {
         group.addTemplate(FileTemplateDescriptor(PluginConst.TPL_REACT_VIEW, AllIcons.Actions.AddFile))
         group.addTemplate(FileTemplateDescriptor(PluginConst.TPL_REACT_STYLE, AllIcons.FileTypes.UiForm))
         group.addTemplate(FileTemplateDescriptor(PluginConst.TPL_TRACKING, AllIcons.Actions.AddFile))
+        group.addTemplate(FileTemplateDescriptor(PluginConst.TPL_MOCK_FILE, AllIcons.Actions.AddFile))
         return group
     }
 }

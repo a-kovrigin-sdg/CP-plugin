@@ -1,0 +1,5 @@
+import { mockFunctionWithReturnValueRecreatingOnEachTest } from '@sdv/test-commons/mocks/creating'
+import { ReplaySubject } from 'rxjs'
+${IMPORTS}
+
+${CONTENT}

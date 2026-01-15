@@ -29,6 +29,8 @@ Features:
 * Tracking HOC adder
 * Platform templates implementation for monorepo
 * Jump on 5 lines above/below (fn + option + UP/DOWN) with possible text selection by adding Shift
+* All file templates can be modified in Settings → Editor → File and Code Templates
+* Generation mocks for classes and functions 
 <!-- Plugin description end -->
 
 ## Installation

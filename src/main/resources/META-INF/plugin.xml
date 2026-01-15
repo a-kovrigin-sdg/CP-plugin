@@ -49,6 +49,15 @@
                 <add-to-group group-id="NewGroup" anchor="first"/>
             </action>
 
+            <action id="com.github.akovriginsdg.cpplugin.CreateMockAction"
+                    class="com.github.akovriginsdg.cpplugin.actions.CreateMockAction"
+                    text="Create Domain Mock"
+                    description="Generates .mock.ts for domain class"
+                    icon="AllIcons.Actions.AddFile">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            </action>
+
             <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpUpAction"
                     class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
                     text="Jump Up" description="Jumps up with custom logic">
