@@ -40,77 +40,86 @@
         <referencesSearch implementation="com.github.akovriginsdg.cpplugin.usageSearcher.ProjectFileUsageSearcher"/>
     </extensions>
     <actions>
-        <group id="CPPlugin.Navigation" text="Fast Navigation" popup="true">
-            <action id="com.github.akovriginsdg.cpplugin.actions.offeringTemplateGenerator.CreateOfferingAction"
-                    class="com.github.akovriginsdg.cpplugin.actions.offeringTemplateGenerator.CreateOfferingAction"
-                    text="Offering"
-                    icon="AllIcons.Actions.AddFile"
-                    description="Creates a new Offering class inside domain">
-                <add-to-group group-id="NewGroup" anchor="first"/>
-            </action>
 
-            <action id="com.github.akovriginsdg.cpplugin.CreateMockAction"
-                    class="com.github.akovriginsdg.cpplugin.actions.CreateMockAction"
-                    text="Create Domain Mock"
-                    description="Generates .mock.ts for domain class"
-                    icon="AllIcons.Actions.AddFile">
-                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            </action>
-
-            <action id="com.github.akovriginsdg.cpplugin.actions.CreateTestFileAction"
-                    class="com.github.akovriginsdg.cpplugin.actions.CreateTestFileAction"
-                    text="Create and Update Domain Test"
-                    description="Generates and updates .test.ts for domain class"
-                    icon="AllIcons.Actions.AddFile">
-                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            </action>
-
-            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpUpAction"
-                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
-                    text="Jump Up" description="Jumps up with custom logic">
-
-                <keyboard-shortcut first-keystroke="alt PAGE_UP" keymap="$default"/>
-
-                <keyboard-shortcut first-keystroke="shift alt PAGE_UP" keymap="$default"/>
-            </action>
-
-            <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpDownAction"
-                    class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpDownAction"
-                    text="Jump Down" description="Jumps down with custom logic">
-
-                <keyboard-shortcut first-keystroke="alt PAGE_DOWN" keymap="$default"/>
-
-                <keyboard-shortcut first-keystroke="shift alt PAGE_DOWN" keymap="$default"/>
-            </action>
-        </group>
-        <action id="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
-                class="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
-                text="React Component Structure"
-                description="Creates index.tsx, view.tsx and styles.module.less"
-                icon="AllIcons.Nodes.Module"
-        >
-            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
+                class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
+                text="Jump Up" description="Jumps up">
+            <keyboard-shortcut first-keystroke="alt PAGE_UP" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="shift alt PAGE_UP" keymap="$default"/>
         </action>
-        <action id="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"
-                class="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"
-                text="Add Tracking HOC"
-                description="Creates tracking.tsx and wraps View in index.tsx"
-                icon="AllIcons.General.Add">
 
-            <add-to-group group-id="NewGroup"
-                          anchor="after"
-                          relative-to-action="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"/>
-
-            <add-to-group group-id="GenerateGroup" anchor="first"/>
+        <action id="com.github.akovriginsdg.cpplugin.actions.navigation.JumpDownAction"
+                class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpDownAction"
+                text="Jump Down" description="Jumps down">
+            <keyboard-shortcut first-keystroke="alt PAGE_DOWN" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="shift alt PAGE_DOWN" keymap="$default"/>
         </action>
-        <action id="com.github.akovriginsdg.cpplugin.actions.CreateDomainInjectionAction"
+
+        <action id="com.github.akovriginsdg.cpplugin.CreateOfferingAction"
+                class="com.github.akovriginsdg.cpplugin.actions.offeringTemplateGenerator.CreateOfferingAction"
+                text="Offering" icon="AllIcons.Actions.AddFile"/>
+
+        <action id="com.github.akovriginsdg.cpplugin.CreateDomainInjectionAction"
                 class="com.github.akovriginsdg.cpplugin.actions.CreateDomainInjectionAction"
-                text="Create Domain Injection"
-                description="Creates domain bridge files for web and mobile"
-                icon="AllIcons.Nodes.Interface">
-            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+                text="Domain Injection" icon="AllIcons.Nodes.Interface"/>
+
+        <action id="com.github.akovriginsdg.cpplugin.CreateComponentAction"
+                class="com.github.akovriginsdg.cpplugin.actions.CreateComponentAction"
+                text="React Component Structure" icon="AllIcons.Nodes.Module"/>
+
+        <action id="com.github.akovriginsdg.cpplugin.AddTrackingAction"
+                class="com.github.akovriginsdg.cpplugin.actions.AddTrackingAction"
+                text="Tracking HOC" icon="AllIcons.General.Add"/>
+
+        <action id="com.github.akovriginsdg.cpplugin.mockFileHandler.CreateMockFileAction"
+                class="com.github.akovriginsdg.cpplugin.actions.mockFileHandler.CreateMockFileAction"
+                text="Domain Mock"
+                description="Generates .mock.ts"
+                icon="AllIcons.Actions.AddFile">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+
+        <action id="com.github.akovriginsdg.cpplugin.mockFileHandler.UpdateMockFileAction"
+                class="com.github.akovriginsdg.cpplugin.actions.mockFileHandler.UpdateMockFileAction"
+                text="Domain Mock"
+                description="Generates .mock.ts"
+                icon="AllIcons.Actions.AddFile">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+        <action id="com.github.akovriginsdg.cpplugin.testFileHandler.CreateTestFileAction"
+                class="com.github.akovriginsdg.cpplugin.actions.testFileHandler.CreateTestFileAction"
+                text="Domain Test"
+                description="Generates .test.ts"
+                icon="AllIcons.Actions.AddFile">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+        <action id="com.github.akovriginsdg.cpplugin.testFileHandler.UpdateTestFileAction"
+                class="com.github.akovriginsdg.cpplugin.actions.testFileHandler.UpdateTestFileAction"
+                text="Domain Test"
+                description="Updates imports in .test.ts"
+                icon="AllIcons.Actions.AddFile">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+
+        <group id="CPPlugin.NavigationGroup" text="Fast Navigation" popup="true">
+            <reference ref="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.actions.navigation.JumpDownAction"/>
+        </group>
+
+        <group id="CPPlugin.NewMenuGroup" text="CP Helper" popup="false">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.CreateOfferingAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.CreateDomainInjectionAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.CreateComponentAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.AddTrackingAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.mockFileHandler.CreateMockFileAction"/>
+            <reference ref="com.github.akovriginsdg.cpplugin.testFileHandler.CreateTestFileAction"/>
+        </group>
+
     </actions>
 </idea-plugin>

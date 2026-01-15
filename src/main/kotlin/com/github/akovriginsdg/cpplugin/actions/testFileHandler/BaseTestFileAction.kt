@@ -26,36 +26,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 
-open class CreateTestFileAction : AnAction() {
-
-    private val LOG = Logger.getInstance(CreateTestFileAction::class.java)
+open class BaseTestFileAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-
-    override fun update(e: AnActionEvent) {
-        val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val project = e.project
-
-        val isVisible = project != null &&
-                file != null &&
-                !file.isDirectory &&
-                file.nameSequence.endsWith(".ts") &&
-                !file.nameSequence.endsWith(".spec.ts") &&
-                !file.nameSequence.endsWith(".mock.ts") &&
-                !file.nameSequence.endsWith(".d.ts")
-
-        e.presentation.isEnabledAndVisible = isVisible
-
-        if (isVisible && file != null) {
-            if (file.nameSequence.endsWith(".test.ts")) {
-                e.presentation.text = "Update Mocks Imports"
-                e.presentation.description = "Updates mock connections in the current test file"
-            } else {
-                e.presentation.text = "Create and Update Test"
-                e.presentation.description = "Creates a new test file or updates an existing one"
-            }
-        }
-    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

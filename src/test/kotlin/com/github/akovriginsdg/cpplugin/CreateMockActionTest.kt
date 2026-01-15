@@ -1,6 +1,6 @@
 package com.github.akovriginsdg.cpplugin
 
-import com.github.akovriginsdg.cpplugin.actions.CreateMockAction
+import com.github.akovriginsdg.cpplugin.actions.mockFileHandler.CreateMockFileAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.WriteAction
@@ -136,7 +136,7 @@ class CreateMockActionTest : BasePlatformTestCase() {
     }
 
     private fun executeAction(file: VirtualFile) {
-        val action = object : CreateMockAction() {
+        val action = object : CreateMockFileAction() {
             override fun createMockFile(
                 project: Project,
                 directory: VirtualFile,

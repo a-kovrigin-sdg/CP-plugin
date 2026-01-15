@@ -1,8 +1,10 @@
-package com.github.akovriginsdg.cpplugin.actions
+package com.github.akovriginsdg.cpplugin.actions.mockFileHandler
 
 import com.github.akovriginsdg.cpplugin.PluginConst
 import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.fileTemplates.FileTemplateUtil
+import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
+import com.intellij.lang.ecmascript6.psi.ES6ImportDeclaration
 import com.intellij.lang.javascript.JSTokenTypes
 import com.intellij.lang.javascript.psi.*
 import com.intellij.lang.javascript.psi.ecmal4.JSAttributeList
@@ -13,12 +15,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
@@ -26,66 +28,111 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.*
 
-open class CreateMockAction : AnAction() {
+open class BaseMockFileAction : AnAction() {
+
+    private val LOG = Logger.getInstance(BaseMockFileAction::class.java)
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    override fun update(e: AnActionEvent) {
-        val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val project = e.project
-        val isVisible = project != null &&
-                file != null &&
-                !file.isDirectory &&
-                file.nameSequence.endsWith(".ts") &&
-                !file.nameSequence.endsWith(".mock.ts") &&
-                !file.nameSequence.endsWith(".test.ts") &&
-                !file.nameSequence.endsWith(".d.ts")
-        e.presentation.isEnabledAndVisible = isVisible
-    }
-
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val originalFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val currentFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
 
-        val mockName = "${originalFile.nameWithoutExtension}.mock.ts"
-        val existingMockFile = originalFile.parent?.findChild(mockName)
+        LOG.warn("[MockAction] Started for file: ${currentFile.path}")
 
-        if (existingMockFile != null) {
-            FileDocumentManager.getInstance().saveAllDocuments()
-            val psiManager = PsiManager.getInstance(project)
-            val originalPsiFile = psiManager.findFile(originalFile) ?: return
-
-            val exports = parsePsiExports(originalPsiFile)
-            if (exports.isEmpty()) {
-                FileEditorManager.getInstance(project).openFile(existingMockFile, true)
-                return
-            }
-
-            val mockPsiFile = psiManager.findFile(existingMockFile)
-            if (mockPsiFile != null) {
-                updateMockFile(project, mockPsiFile, exports)
-                FileEditorManager.getInstance(project).openFile(existingMockFile, true)
-                return
-            }
-        }
-
+        // 1. Commit PSI (Обязательно перед работой)
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
         FileDocumentManager.getInstance().saveAllDocuments()
+
+        // 2. Определяем Source и Mock в зависимости от того, куда кликнули
+        val sourceFile: VirtualFile
+        val mockFile: VirtualFile?
+
+        if (currentFile.name.endsWith(".mock.ts")) {
+            // Кликнули по моку -> хотим обновить его на основе исходника
+            mockFile = currentFile
+            // Пытаемся найти исходник: index.mock.ts -> index.ts
+            val sourceName = currentFile.name.replace(".mock.ts", ".ts")
+            val sibling = currentFile.parent.findChild(sourceName)
+
+            if (sibling == null) {
+                Messages.showErrorDialog(project, "Could not find source file '$sourceName' for this mock.", "Error")
+                return
+            }
+            sourceFile = sibling
+            LOG.warn("[MockAction] Context: Mock File selected. Source resolved to: ${sourceFile.name}")
+        } else {
+            // Кликнули по исходнику -> ищем или создаем мок
+            sourceFile = currentFile
+            val mockName = "${sourceFile.nameWithoutExtension}.mock.ts"
+            // Рефреш папки, чтобы увидеть файл, если он только что создан
+            sourceFile.parent.refresh(false, false)
+            mockFile = sourceFile.parent.findChild(mockName)
+            LOG.warn("[MockAction] Context: Source File selected. Mock found: ${mockFile != null}")
+        }
+
         val psiManager = PsiManager.getInstance(project)
-        val originalPsiFile = psiManager.findFile(originalFile) ?: return
+        val sourcePsiFile = psiManager.findFile(sourceFile) ?: return
 
-        val exports = parsePsiExports(originalPsiFile)
+        // 3. Парсим ИСХОДНИК (всегда)
+        LOG.warn("[MockAction] Parsing exports from source: ${sourceFile.name}")
+        val exports = parsePsiExports(sourcePsiFile)
+
         if (exports.isEmpty()) {
-            Messages.showInfoMessage(project, "No exported classes or functions found.", "Info")
+            LOG.warn("[MockAction] No exports found in ${sourceFile.name}")
+            Messages.showInfoMessage(project, "No exported classes or functions found in ${sourceFile.name}.", "Info")
             return
         }
 
-        val absoluteImportPath = calculateAbsoluteImportPath(originalFile) ?: run {
-            Messages.showErrorDialog(project, "Could not determine domain path.", "Error")
-            return
-        }
+        // 4. Обновляем или Создаем
+        if (mockFile != null) {
+            val mockPsiFile = psiManager.findFile(mockFile)
+            if (mockPsiFile != null) {
+                LOG.warn("[MockAction] Updating existing mock...")
+                updateMockFile(project, mockPsiFile, exports)
+                FileEditorManager.getInstance(project).openFile(mockFile, true)
+            }
+        } else {
+            LOG.warn("[MockAction] Creating new mock...")
+            val absoluteImportPath = calculateAbsoluteImportPath(sourceFile) ?: run {
+                Messages.showErrorDialog(project, "Could not determine domain path.", "Error")
+                return
+            }
 
-        val (importsCode, bodyCode) = generateMockContent(exports, absoluteImportPath)
-        createMockFile(project, originalFile.parent, "${originalFile.nameWithoutExtension}.mock", importsCode, bodyCode)
+            val (importsCode, bodyCode) = generateMockContent(exports, absoluteImportPath)
+            createMockFile(project, sourceFile.parent, "${sourceFile.nameWithoutExtension}.mock", importsCode, bodyCode)
+        }
+    }
+
+    private fun parsePsiExports(psiFile: PsiFile): List<ExportedItem> {
+        val items = mutableListOf<ExportedItem>()
+        val children = psiFile.children
+
+        for (element in children) {
+            if (isTypeOrInterface(element)) continue
+
+            // 1. Прямой экспорт: export class Foo
+            if (element is JSAttributeListOwner && isExported(element)) {
+                if (element is JSClass || element is JSFunction || element is JSVarStatement) {
+                    processElement(element, items)
+                }
+            }
+
+            // 2. Экспорт списка: export { Foo, Bar }
+            // Это важно, если исходник написан так: class Foo {}; export { Foo };
+            if (element is ES6ExportDeclaration) {
+                val specifiers = element.exportSpecifiers
+                for (spec in specifiers) {
+                    // Разрешаем ссылку (Ctrl+Click logic), чтобы найти, где определен Foo
+                    val resolved = spec.reference?.resolve()
+                    if (resolved is JSAttributeListOwner) {
+                        // Если это класс/функция - обрабатываем
+                        processElement(resolved, items)
+                    }
+                }
+            }
+        }
+        return items
     }
 
     private fun updateMockFile(project: Project, mockPsiFile: PsiFile, sourceExports: List<ExportedItem>) {
@@ -127,6 +174,10 @@ open class CreateMockAction : AnAction() {
         }
     }
 
+    // ... Остальные методы (findClassInFile, hasVariableInFile, processElement, генераторы) без изменений ...
+    // Вставьте их сюда из предыдущей версии
+
+    // --- ДЛЯ ПОЛНОТЫ, helper methods ---
     private fun findClassInFile(file: PsiFile, className: String): JSClass? {
         return PsiTreeUtil.findChildrenOfType(file, JSClass::class.java)
             .firstOrNull { it.name == className }
@@ -178,8 +229,6 @@ open class CreateMockAction : AnAction() {
         return sb.toString()
     }
 
-    // --- PARSING ---
-
     sealed class ExportedItem {
         data class FunctionItem(val name: String) : ExportedItem()
         data class ClassItem(
@@ -193,20 +242,6 @@ open class CreateMockAction : AnAction() {
     }
 
     data class Property(val name: String, val type: String, val isObservable: Boolean)
-
-    private fun parsePsiExports(psiFile: PsiFile): List<ExportedItem> {
-        val items = mutableListOf<ExportedItem>()
-        val children = psiFile.children
-        for (element in children) {
-            if (isTypeOrInterface(element)) continue
-            if (element is JSAttributeListOwner && isExported(element)) {
-                if (element is JSClass || element is JSFunction || element is JSVarStatement) {
-                    processElement(element, items)
-                }
-            }
-        }
-        return items
-    }
 
     private fun isTypeOrInterface(element: com.intellij.psi.PsiElement): Boolean {
         val elementType = element.node.elementType.toString()

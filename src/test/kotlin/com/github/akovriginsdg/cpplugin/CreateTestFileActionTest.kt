@@ -1,6 +1,6 @@
 package com.github.akovriginsdg.cpplugin
 
-import com.github.akovriginsdg.cpplugin.actions.CreateTestFileAction
+import com.github.akovriginsdg.cpplugin.actions.testFileHandler.CreateTestFileAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.application.WriteAction
