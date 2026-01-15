@@ -38,6 +38,7 @@ open class CreateMockAction : AnAction() {
                 !file.isDirectory &&
                 file.nameSequence.endsWith(".ts") &&
                 !file.nameSequence.endsWith(".mock.ts") &&
+                !file.nameSequence.endsWith(".test.ts") &&
                 !file.nameSequence.endsWith(".d.ts")
         e.presentation.isEnabledAndVisible = isVisible
     }

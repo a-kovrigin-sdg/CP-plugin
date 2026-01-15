@@ -58,6 +58,15 @@
                 <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             </action>
 
+            <action id="com.github.akovriginsdg.cpplugin.actions.CreateTestFileAction"
+                    class="com.github.akovriginsdg.cpplugin.actions.CreateTestFileAction"
+                    text="Create and Update Domain Test"
+                    description="Generates and updates .test.ts for domain class"
+                    icon="AllIcons.Actions.AddFile">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            </action>
+
             <action id="com.github.akovriginsdg.cpplugin.actions.navigation.BaseJumpUpAction"
                     class="com.github.akovriginsdg.cpplugin.actions.navigation.JumpUpAction"
                     text="Jump Up" description="Jumps up with custom logic">
