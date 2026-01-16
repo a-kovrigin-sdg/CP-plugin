@@ -91,7 +91,12 @@ open class BaseTestFileAction : AnAction() {
 
             val fromPath = imp.fromClause?.referenceText?.trim('\'', '"') ?: continue
 
-            if (!fromPath.startsWith("@sdv/")) continue
+            val shouldSkip = !fromPath.startsWith("@sdv/")
+                    || fromPath.startsWith("@sdv/commons/rx")
+                    || fromPath.startsWith("@sdv/commons/utils/time-interval")
+                    || fromPath.startsWith("@sdv/commons/result")
+
+            if (shouldSkip) continue
 
             val specifiers = imp.importSpecifiers.filter { spec ->
                 spec.node.findChildByType(JSTokenTypes.TYPE_KEYWORD) == null
