@@ -11,3 +11,4 @@
 - Tracking HOC adder
 - Platform templates implementation for monorepo
 - Jumps on several lines at once when navigating through code
+- Minor bugfixes
